@@ -10,7 +10,7 @@ def random_sleep():
     time.sleep(random.uniform(16, 22))
 
 # Set up the Selenium WebDriver (you need to specify the path to your webdriver)
-driver = webdriver.Chrome(executable_path='./chromedriver')
+driver = webdriver.Chrome(executable_path='/usr/local/bin/chromedriver_linux64.zip')
 
 url = 'https://www.file-upload.org/gy4xwjd0ec4h'
 driver.get(url)
