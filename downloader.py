@@ -5,8 +5,6 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 import requests
 
-#print(driver.capabilities['chrome']['chromedriverVersion'])
-
 
 def random_sleep():
     
