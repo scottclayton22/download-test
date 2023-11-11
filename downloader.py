@@ -19,6 +19,10 @@ driver.get(url)
 
 random_sleep()
 
+driver.get(url)
+
+random_sleep()
+
 post_data_1 = {'op': 'download1', 'usr_login': '', 'id': 'gy4xwjd0ec4h', 'fname': 'aerial_rocks_02_disp_4k.png', 'referer': 'https://www.babup.com/', 'method_free': 'Free+Download'}
 response_1 = requests.post('https://www.file-upload.org/gy4xwjd0ec4h', data=post_data_1)
 
