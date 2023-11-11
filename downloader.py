@@ -15,6 +15,7 @@ def random_sleep():
 # Set up the Selenium WebDriver (you need to specify the path to your webdriver)
 chrome_options = webdriver.ChromeOptions()
 chrome_options.add_argument('--headless')  # Add other options if needed
+chrome_options.add_argument('--remote-debugging-port=9222')
 driver = webdriver.Chrome(options=chrome_options)
 
 url = 'https://www.file-upload.org/gy4xwjd0ec4h'
