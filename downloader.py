@@ -1,50 +1,153 @@
+import subprocess
+
+# Function to install dependencies
+def install_dependencies():
+    try:
+        subprocess.run(["pip", "install", "requests"])
+        subprocess.run(["pip", "install", "selenium"])
+        # Add any other dependencies you may need
+
+        print("Dependencies installed successfully.")
+    except Exception as e:
+        print(f"Error installing dependencies: {e}")
+
+# Function to download chromedriver
+def download_chromedriver():
+    try:
+        subprocess.run(["wget", "https://chromedriver.storage.googleapis.com/114.0.5735.90/chromedriver_linux64.zip"])
+        subprocess.run(["unzip", "chromedriver_linux64.zip"])
+        subprocess.run(["mv", "chromedriver", "/usr/local/bin/"])
+
+        print("Chromedriver downloaded and moved to /usr/local/bin/")
+    except Exception as e:
+        print(f"Error downloading Chromedriver: {e}")
+
+# Install dependencies
+install_dependencies()
+
+# Download and move chromedriver
+download_chromedriver()
+
+
 import time
 import random
 import os
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 import requests
 
-
 def random_sleep():
+    time.sleep(random.uniform(15, 20))  # Adjust the sleep range as needed
+
+def get_proxies():
+    response = requests.get('https://api.proxyscrape.com/v2/?request=displayproxies&protocol=http&timeout=10000&country=all&ssl=all&anonymity=all')
+    return response.text.strip().split('\n')
+
+def test_proxy(proxy):
+    if not proxy.startswith(('http://', 'https://')):
+        proxy = 'http://' + proxy
+    try:
+        response = requests.get('http://www.example.com', proxies={'http': proxy, 'https': proxy}, timeout=10)
+        response.raise_for_status()
+        print(f"Proxy {proxy} is working.")
+        return True
+    except requests.exceptions.RequestException as e:
+        print(f"Error testing proxy {proxy}: {e}")
+        return False
+
+
+def set_proxy(proxy):
+    chrome_options = webdriver.ChromeOptions()
+    chrome_options.add_argument(f'--proxy-server={proxy}')
+    chrome_options.set_page_load_timeout(30)
+
+    return webdriver.Chrome(options=chrome_options)
+
+def main():
+    all_proxies = get_proxies()
     
-    time.sleep(random.uniform(16, 22))
+    for proxy in all_proxies:
+        try:
+            myproxy = test_proxy(proxy)
+            if myproxy == True:
+                print(f'Proxy {proxy} is working.')
+            else:
+                continue
+        except:
+            continue
+        if test_proxy(proxy):
+            driver = set_proxy(proxy)
 
-# Set up the Selenium WebDriver (you need to specify the path to your webdriver)
-chrome_options = webdriver.ChromeOptions()
-driver = webdriver.Chrome(options=chrome_options)
+            url = 'https://www.file-upload.org/gy4xwjd0ec4h'
+            driver.get(url)
 
-url = 'https://www.file-upload.org/gy4xwjd0ec4h'
-driver.get(url)
+            random_sleep()
 
-random_sleep()
+            post_data_1 = {'op': 'download1', 'usr_login': '', 'id': 'gy4xwjd0ec4h', 'fname': 'aerial_rocks_02_disp_4k.png', 'referer': 'https://www.babup.com/', 'method_free': 'Free Download'}
 
-driver.get(url)
+            try:
+                response_1 = requests.post('https://www.file-upload.org/gy4xwjd0ec4h', data=post_data_1)
+                response_1.raise_for_status()  # Check for HTTP errors
+            except requests.exceptions.RequestException as e:
+                print(f'Error in the first POST request: {e}')
+                driver.quit()
+                continue  # Move on to the next proxy
 
-random_sleep()
+            try:
+                form_f1 = WebDriverWait(driver, 10).until(
+                    EC.presence_of_element_located((By.NAME, 'F1'))
+                )
+                rand_value = form_f1.find_element(By.NAME, 'rand').get_attribute('value')
+            except Exception as e:
+                print(f'Error locating form with name="F1": {e}')
+                driver.quit()
+                continue  # Move on to the next proxy
 
-post_data_1 = {'op': 'download1', 'usr_login': '', 'id': 'gy4xwjd0ec4h', 'fname': 'aerial_rocks_02_disp_4k.png', 'referer': 'https://www.babup.com/', 'method_free': 'Free+Download'}
-response_1 = requests.post('https://www.file-upload.org/gy4xwjd0ec4h', data=post_data_1)
+            random_sleep()
 
-form_f1 = driver.find_element(By.ID, 'F1')
-rand_value = form_f1.find_element(By.NAME, 'rand').get_attribute('value')
+            post_data_2 = {'op': 'download2', 'id': 'gy4xwjd0ec4h', 'rand': rand_value, 'referer': 'https://www.babup.com/', 'method_free': 'Free Download', 'method_premium': '', 'g-recaptcha-response': 'YourCaptchaResponse', 'h-captcha-response': 'YourHCaptchaResponse'}
 
-random_sleep()
+            try:
+                response_2 = requests.post('https://www.file-upload.org/gy4xwjd0ec4h', data=post_data_2)
+                response_2.raise_for_status()  # Check for HTTP errors
+            except requests.exceptions.RequestException as e:
+                print(f'Error in the second POST request: {e}')
+                driver.quit()
+                continue  # Move on to the next proxy
 
-post_data_2 = {'op': 'download2', 'id': 'gy4xwjd0ec4h', 'rand': rand_value, 'referer': 'https://www.babup.com/', 'method_free': 'Free Download', 'method_premium': '', 'g-recaptcha-response': 'P1_eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.hKdwYXNza2V5xQQjhox84v_tK8EPiufmBlxYH_KvXi9z2FBNmsAlXBt_JvFK-BsGWrzybBJS-mL1BvL63eaLkvQ-914hJJZ8hjGHH8M3idwPVGnkZROvSOoimFNAp9C0Ru8YE0Fb5MPMErECLCYBxLsX0Up4YVVcFH6TG_EetGYF4FUQF6LBhjWWZgqP3qjy0RFNcgTQ9S57yQZHjjuZwD4c-i0rhzBHnwjKbVW6KgYcKPNWXs5B7g8cNoYDKOXq3wUcbyxDV3hUXPwj3rojNK-oxxeV4p6hBWDqCAJEdFERORAYNoDtds4EtOOfDWb-ZhWDPs5KPXWje9-yupREMGrII4h4p-Wp4veb3Pa9mNHR08Qkxh1WivfGs97eOgdkO74nKCGSyIU4CMVxWuKB9nUfXQH2jFjhB2lszG9k9O8VcWldRyjD6h09HPYOClQRO3pW_EcQLtp8R-OGR7sM6S4jTcUh2ehdU-LMbTYjo_Q5nVxporeQBVCuaYrBf4kIW5rQgSthZet-ak7AcFiiujQFStyVkapF8m1J8-wVyx076mMrN3tprpWUgjLA8zP_RH3RIBl8V_bTJnPGD8t2ihN2huySpw4p6vRAUXrPqNolMsbItRZr1jBLRSKc7-3G3pxbbUCWgK0Q5uWaR45F0Lwsq0Ok-eybqeaXpc1CqGMyh-gh-8eaVGPWVaSafYfakTR8IDiY4LCFGzO2j0edh95n5uCN1Gh4okL_BW5qA_b3F08ooo6-33l3tAxKqiog0KGBzLUXXnyaC2zVVmOBNKVHPomCddIpXY35sInW0h_yvWnO-gYXS9gaUOHvPKpmWwsayExoxXJOhZ7uG8d9wzTehGTxouRIJFz5KZlx5-JLYDp-npXLNCD2hu_lG2h_5ziAFxL4RN9WmOOyi-3AzxxDmJmg6G4gejd3zSBSGDy3PgwJBnHXWcqHGrGI45hAFXlMkO4ub31mku60JxRLaJiRW9s6aD0ENkOk5dJiunkKP-OBxSElVLQtTXqMln89040lCzysMABM3jvKSz960C9im2xzzHPaIWP6TA62orRwbTy2N-wwOE9r9l_fpbUNyfpAlyxH_kABjkf8oML1l4pl7JdfdjwNry0xE_rI2ZksfZFKX1n528DPA6D1UIyfeuMoaWZuygOJGwmrUk9alePz4nj_fgWDpc3XrI4hAXgGRvNE7EJxMj8Gk4Hd_mGhIe-tSSGgzJxFlszItg9aSAr_LYqMPjPcvr6l9Xb45XJh5_FvGKmkOUGkMRssFrKKqZIFxfQohd0MDbPIKZDOzPiNepbU5tpVgeYMCkjTSJYbTo0dYiS9OrE1Z6zbIX1CXzxExQCrckTKzYGuOru9vRQO5SA9xZVV3pgZih72_ud93mmb8WTpjeFz1p4hgeU1a6TRJ8Xrnjfp2msKiUJzo2V4cM5lTf86qHNoYXJkX2lkzg07ZCmicGQA.pwNefcOHvJ45nmV71cAM3dYgQKpu3UhfSjkoE5NYNNs', 'h-captcha-response': 'P1_eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.hKdwYXNza2V5xQQjhox84v_tK8EPiufmBlxYH_KvXi9z2FBNmsAlXBt_JvFK-BsGWrzybBJS-mL1BvL63eaLkvQ-914hJJZ8hjGHH8M3idwPVGnkZROvSOoimFNAp9C0Ru8YE0Fb5MPMErECLCYBxLsX0Up4YVVcFH6TG_EetGYF4FUQF6LBhjWWZgqP3qjy0RFNcgTQ9S57yQZHjjuZwD4c-i0rhzBHnwjKbVW6KgYcKPNWXs5B7g8cNoYDKOXq3wUcbyxDV3hUXPwj3rojNK-oxxeV4p6hBWDqCAJEdFERORAYNoDtds4EtOOfDWb-ZhWDPs5KPXWje9-yupREMGrII4h4p-Wp4veb3Pa9mNHR08Qkxh1WivfGs97eOgdkO74nKCGSyIU4CMVxWuKB9nUfXQH2jFjhB2lszG9k9O8VcWldRyjD6h09HPYOClQRO3pW_EcQLtp8R-OGR7sM6S4jTcUh2ehdU-LMbTYjo_Q5nVxporeQBVCuaYrBf4kIW5rQgSthZet-ak7AcFiiujQFStyVkapF8m1J8-wVyx076mMrN3tprpWUgjLA8zP_RH3RIBl8V_bTJnPGD8t2ihN2huySpw4p6vRAUXrPqNolMsbItRZr1jBLRSKc7-3G3pxbbUCWgK0Q5uWaR45F0Lwsq0Ok-eybqeaXpc1CqGMyh-gh-8eaVGPWVaSafYfakTR8IDiY4LCFGzO2j0edh95n5uCN1Gh4okL_BW5qA_b3F08ooo6-33l3tAxKqiog0KGBzLUXXnyaC2zVVmOBNKVHPomCddIpXY35sInW0h_yvWnO-gYXS9gaUOHvPKpmWwsayExoxXJOhZ7uG8d9wzTehGTxouRIJFz5KZlx5-JLYDp-npXLNCD2hu_lG2h_5ziAFxL4RN9WmOOyi-3AzxxDmJmg6G4gejd3zSBSGDy3PgwJBnHXWcqHGrGI45hAFXlMkO4ub31mku60JxRLaJiRW9s6aD0ENkOk5dJiunkKP-OBxSElVLQtTXqMln89040lCzysMABM3jvKSz960C9im2xzzHPaIWP6TA62orRwbTy2N-wwOE9r9l_fpbUNyfpAlyxH_kABjkf8oML1l4pl7JdfdjwNry0xE_rI2ZksfZFKX1n528DPA6D1UIyfeuMoaWZuygOJGwmrUk9alePz4nj_fgWDpc3XrI4hAXgGRvNE7EJxMj8Gk4Hd_mGhIe-tSSGgzJxFlszItg9aSAr_LYqMPjPcvr6l9Xb45XJh5_FvGKmkOUGkMRssFrKKqZIFxfQohd0MDbPIKZDOzPiNepbU5tpVgeYMCkjTSJYbTo0dYiS9OrE1Z6zbIX1CXzxExQCrckTKzYGuOru9vRQO5SA9xZVV3pgZih72_ud93mmb8WTpjeFz1p4hgeU1a6TRJ8Xrnjfp2msKiUJzo2V4cM5lTf86qHNoYXJkX2lkzg07ZCmicGQA.pwNefcOHvJ45nmV71cAM3dYgQKpu3UhfSjkoE5NYNNs'}
-response_2 = requests.post('https://www.file-upload.org/gy4xwjd0ec4h', data=post_data_2)
+            random_sleep()
 
-random_sleep()
+            try:
+                element_id = 'download-btn'
+                element = WebDriverWait(driver, 10).until(
+                    EC.presence_of_element_located((By.ID, element_id))
+                )
+                file_url = element.get_attribute('href')
+            except Exception as e:
+                print(f'Error locating element with id="{element_id}": {e}')
+                driver.quit()
+                continue  # Move on to the next proxy
 
-element_id = 'download-btn'
-element = driver.find_element(By.ID, element_id)
+            try:
+                file_response = requests.get(file_url)
+                file_response.raise_for_status()  # Check for HTTP errors
+            except requests.exceptions.RequestException as e:
+                print(f'Error downloading the file: {e}')
+                driver.quit()
+                continue  # Move on to the next proxy
 
-file_url = element.get_attribute('href')
-file_response = requests.get(file_url)
-with open('downloaded_file.zip', 'wb') as file:
-    file.write(file_response.content)
+            with open('downloaded_file.zip', 'wb') as file:
+                file.write(file_response.content)
 
-# Delete the downloaded file
-os.remove('downloaded_file.zip')
+            # Delete the downloaded file
+            os.remove('downloaded_file.zip')
 
-driver.quit()
+            driver.quit()
+            break  # Exit the loop after the first successful run
+        else:
+            continue  # Move on to the next proxy
+
+if __name__ == "__main__":
+    main()
