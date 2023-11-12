@@ -26,7 +26,6 @@ try:
 except requests.exceptions.RequestException as e:
     print(f'Error in the first POST request: {e}')
     driver.quit()
-    continue  # Move on to the next proxy
 
 try:
     form_f1 = WebDriverWait(driver, 10).until(
@@ -36,7 +35,6 @@ try:
 except Exception as e:
     print(f'Error locating form with name="F1": {e}')
     driver.quit()
-    continue  # Move on to the next proxy
 
 random_sleep()
 
@@ -48,7 +46,6 @@ try:
 except requests.exceptions.RequestException as e:
     print(f'Error in the second POST request: {e}')
     driver.quit()
-    continue  # Move on to the next proxy
 
 random_sleep()
 
@@ -61,7 +58,6 @@ try:
 except Exception as e:
     print(f'Error locating element with id="{element_id}": {e}')
     driver.quit()
-    continue  # Move on to the next proxy
 
 try:
     file_response = requests.get(file_url)
@@ -69,7 +65,6 @@ try:
 except requests.exceptions.RequestException as e:
     print(f'Error downloading the file: {e}')
     driver.quit()
-    continue  # Move on to the next proxy
 
 with open('downloaded_file.zip', 'wb') as file:
     file.write(file_response.content)
